@@ -1,0 +1,77 @@
+<script>
+    // Theme Toggle
+    const adminThemeToggle = document.getElementById('adminThemeToggle');
+    if (adminThemeToggle) {
+        adminThemeToggle.addEventListener('click', () => {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+    }
+    
+    // Mobile Menu Toggle
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const adminSidebar = document.getElementById('adminSidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    
+    function toggleMobileMenu() {
+        mobileMenuToggle.classList.toggle('active');
+        adminSidebar.classList.toggle('active');
+        sidebarOverlay.classList.toggle('active');
+        document.body.style.overflow = adminSidebar.classList.contains('active') ? 'hidden' : '';
+    }
+    
+    function closeMobileMenu() {
+        mobileMenuToggle.classList.remove('active');
+        adminSidebar.classList.remove('active');
+        sidebarOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    
+    if (mobileMenuToggle) {
+        mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+    }
+    
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', closeMobileMenu);
+    }
+    
+    // Close menu when clicking sidebar links
+    document.querySelectorAll('.admin-sidebar .sidebar-link').forEach(link => {
+        link.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                closeMobileMenu();
+            }
+        });
+    });
+    
+    // Page Transition for internal links
+    const pageTransition = document.getElementById('pageTransition');
+    if (pageTransition) {
+        document.querySelectorAll('a[href^="/"]').forEach(link => {
+            link.addEventListener('click', (e) => {
+                const href = link.getAttribute('href');
+                if (href.startsWith('#') || href === window.location.pathname) return;
+                
+                e.preventDefault();
+                closeMobileMenu();
+                pageTransition.classList.add('active');
+                
+                setTimeout(() => {
+                    window.location.href = href;
+                }, 300);
+            });
+        });
+        
+        // Hide transition on page show (back button)
+        window.addEventListener('pageshow', (e) => {
+            if (e.persisted) {
+                pageTransition.classList.remove('active');
+            }
+        });
+    }
+</script>
+</body>
+</html>

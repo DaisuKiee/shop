@@ -1,0 +1,94 @@
+<%- include('./partials/admin-header') %>
+
+<div class="admin-layout">
+    <%- include('./partials/sidebar', { activePage: 'categories' }) %>
+    
+    <main class="admin-main">
+        <div class="admin-topbar">
+            <div>
+                <h1>Categories</h1>
+                <p><%= categories.length %> categories</p>
+            </div>
+            <button class="btn-primary" onclick="openModal()">+ Add Category</button>
+        </div>
+        
+        <div class="categories-grid">
+            <% categories.forEach(cat => { %>
+            <div class="category-card" data-id="<%= cat.id %>">
+                <div class="category-icon">🏷️</div>
+                <div class="category-info">
+                    <h3><%= cat.name %></h3>
+                    <code><%= cat.slug %></code>
+                </div>
+                <button class="category-delete" onclick="deleteCategory(<%= cat.id %>)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                </button>
+            </div>
+            <% }) %>
+            
+            <% if (categories.length === 0) { %>
+            <div class="empty-state" style="grid-column: 1/-1;">No categories yet</div>
+            <% } %>
+        </div>
+    </main>
+</div>
+
+<div class="modal" id="categoryModal">
+    <div class="modal-content" style="max-width: 380px;">
+        <div class="modal-header">
+            <h2>Add Category</h2>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <form id="categoryForm" onsubmit="saveCategory(event)">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Name *</label>
+                    <input type="text" id="categoryName" required placeholder="e.g. Avatar Decorations">
+                </div>
+                <div class="form-group">
+                    <label>Slug *</label>
+                    <input type="text" id="categorySlug" required placeholder="e.g. decoration">
+                    <small>Auto-generated from name</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-outline" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn-primary">Add</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<%- include('./partials/admin-styles') %>
+
+<script>
+function openModal() { document.getElementById('categoryModal').classList.add('active'); }
+function closeModal() { document.getElementById('categoryModal').classList.remove('active'); document.getElementById('categoryForm').reset(); }
+
+document.getElementById('categoryName').addEventListener('input', function() {
+    document.getElementById('categorySlug').value = this.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+});
+
+async function saveCategory(e) {
+    e.preventDefault();
+    const data = { name: document.getElementById('categoryName').value, slug: document.getElementById('categorySlug').value };
+    try {
+        const res = await fetch('/api/admin/categories', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+        const result = await res.json();
+        if (result.success) location.reload();
+        else alert(result.error);
+    } catch (err) { alert('Error saving category'); }
+}
+
+async function deleteCategory(id) {
+    if (!confirm('Delete this category?')) return;
+    try {
+        const res = await fetch(`/api/admin/categories/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) document.querySelector(`.category-card[data-id="${id}"]`).remove();
+        else alert(data.error);
+    } catch (err) { alert('Error deleting category'); }
+}
+</script>
+
+<%- include('./partials/admin-footer') %>

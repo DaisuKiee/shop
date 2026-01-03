@@ -1,0 +1,565 @@
+<%- include('./partials/admin-header') %>
+
+<div class="admin-layout">
+    <%- include('./partials/sidebar', { activePage: 'settings' }) %>
+    
+    <main class="admin-main">
+        <div class="admin-topbar">
+            <div>
+                <h1>Site Settings</h1>
+                <p>Customize your shop homepage</p>
+            </div>
+            <a href="/shop/featured" target="_blank" class="btn-outline">Preview Site</a>
+        </div>
+        
+        <!-- Hero Banner Settings -->
+        <div class="settings-card">
+            <div class="settings-header">
+                <h2>🎨 Hero Banner</h2>
+                <p>Customize the main banner on the featured page</p>
+            </div>
+            <div class="settings-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input type="text" id="heroTitle" value="<%= settings.hero.title %>" placeholder="AVATAR">
+                    </div>
+                    <div class="form-group">
+                        <label>Subtitle</label>
+                        <input type="text" id="heroSubtitle" value="<%= settings.hero.subtitle %>" placeholder="© 2025 STUDIO">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Button Text</label>
+                        <input type="text" id="heroButtonText" value="<%= settings.hero.buttonText %>" placeholder="Shop the Collection">
+                    </div>
+                    <div class="form-group">
+                        <label>Button Link</label>
+                        <input type="text" id="heroButtonLink" value="<%= settings.hero.buttonLink %>" placeholder="/shop">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Background Image</label>
+                    <div class="image-upload-group">
+                        <input type="text" id="heroBackgroundImage" value="<%= settings.hero.backgroundImage %>" placeholder="Image URL or upload">
+                        <label class="upload-btn">
+                            <input type="file" accept="image/*" onchange="uploadImage(this, 'heroBackgroundImage')">
+                            📁 Upload
+                        </label>
+                    </div>
+                    <% if (settings.hero.backgroundImage) { %>
+                    <div class="image-preview" id="heroImagePreview">
+                        <img src="<%= settings.hero.backgroundImage %>" alt="Preview">
+                    </div>
+                    <% } else { %>
+                    <div class="image-preview" id="heroImagePreview" style="display:none;">
+                        <img src="" alt="Preview">
+                    </div>
+                    <% } %>
+                </div>
+                <button class="btn-primary" onclick="saveHeroSettings()">Save Hero Settings</button>
+            </div>
+        </div>
+        
+        <!-- Featured Collections -->
+        <div class="settings-card">
+            <div class="settings-header">
+                <h2>📦 Featured Collections</h2>
+                <p>Manage the collection cards on the homepage</p>
+            </div>
+            <div class="settings-body">
+                <div class="collections-list" id="collectionsList">
+                    <% settings.featuredCollections.forEach((collection, index) => { %>
+                    <div class="collection-item" data-id="<%= collection.id %>">
+                        <div class="collection-preview" style="background: <%= collection.bgColor %>;">
+                            <% if (collection.image) { %>
+                            <img src="<%= collection.image %>" alt="" class="collection-preview-img">
+                            <% } else { %>
+                            <span class="collection-placeholder">📷</span>
+                            <% } %>
+                        </div>
+                        <div class="collection-fields">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Title</label>
+                                    <input type="text" class="col-title" value="<%= collection.title %>" placeholder="COSMOS">
+                                </div>
+                                <div class="form-group">
+                                    <label>Subtitle</label>
+                                    <input type="text" class="col-subtitle" value="<%= collection.subtitle %>" placeholder="WONDERLAND">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Image</label>
+                                <div class="image-upload-group">
+                                    <input type="text" class="col-image" value="<%= collection.image %>" placeholder="Image URL or upload">
+                                    <label class="upload-btn">
+                                        <input type="file" accept="image/*" onchange="uploadCollectionImage(this)">
+                                        📁
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Background Color</label>
+                                    <div class="color-input">
+                                        <input type="color" class="col-color" value="<%= collection.bgColor %>">
+                                        <input type="text" class="col-color-text" value="<%= collection.bgColor %>" placeholder="#1a1a3e">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Link</label>
+                                    <input type="text" class="col-link" value="<%= collection.link %>" placeholder="/shop?category=effects">
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn-delete-collection" onclick="deleteCollection(<%= collection.id %>)" title="Delete">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                        </button>
+                    </div>
+                    <% }) %>
+                </div>
+                
+                <div class="collection-actions">
+                    <button class="btn-outline" onclick="addCollection()">+ Add Collection</button>
+                    <button class="btn-primary" onclick="saveCollections()">Save Collections</button>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+    <span class="toast-message"></span>
+</div>
+
+<%- include('./partials/admin-styles') %>
+
+<style>
+.settings-card {
+    background: var(--admin-card);
+    border: 1px solid var(--admin-border);
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+}
+
+.settings-header {
+    padding: 1.25rem;
+    border-bottom: 1px solid var(--admin-border);
+}
+
+.settings-header h2 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.settings-header p {
+    font-size: 0.85rem;
+    color: #8e8e93;
+}
+
+.settings-body {
+    padding: 1.25rem;
+}
+
+.image-upload-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.image-upload-group input[type="text"] {
+    flex: 1;
+}
+
+.upload-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    background: var(--admin-accent);
+    color: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.upload-btn:hover {
+    filter: brightness(1.1);
+}
+
+.upload-btn input[type="file"] {
+    display: none;
+}
+
+.image-preview {
+    margin-top: 0.75rem;
+    border-radius: 8px;
+    overflow: hidden;
+    max-width: 300px;
+}
+
+.image-preview img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.collections-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.collection-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(0,0,0,0.2);
+    border: 1px solid var(--admin-border);
+    border-radius: 10px;
+    position: relative;
+}
+
+.collection-preview {
+    width: 120px;
+    height: 120px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.collection-preview-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.collection-placeholder {
+    font-size: 2rem;
+    opacity: 0.5;
+}
+
+.collection-fields {
+    flex: 1;
+}
+
+.collection-fields .form-group {
+    margin-bottom: 0.75rem;
+}
+
+.collection-fields .form-group:last-child {
+    margin-bottom: 0;
+}
+
+.color-input {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.color-input input[type="color"] {
+    width: 50px;
+    height: 38px;
+    padding: 2px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.color-input input[type="text"] {
+    flex: 1;
+}
+
+.btn-delete-collection {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: #8e8e93;
+    cursor: pointer;
+}
+
+.btn-delete-collection:hover {
+    background: rgba(237, 66, 69, 0.15);
+    color: var(--admin-red);
+}
+
+.collection-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+}
+
+.toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    padding: 1rem 1.5rem;
+    background: var(--admin-card);
+    border: 1px solid var(--admin-green);
+    border-radius: 8px;
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.toast.error {
+    border-color: var(--admin-red);
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .collection-item {
+        flex-direction: column;
+    }
+    
+    .collection-preview {
+        width: 100%;
+        height: 100px;
+    }
+}
+</style>
+
+<script>
+function showToast(message, isError = false) {
+    const toast = document.getElementById('toast');
+    toast.querySelector('.toast-message').textContent = message;
+    toast.className = 'toast show' + (isError ? ' error' : '');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+async function uploadImage(input, targetId) {
+    const file = input.files[0];
+    if (!file) return;
+    
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    try {
+        const res = await fetch('/api/admin/upload', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+            document.getElementById(targetId).value = data.url;
+            const preview = document.getElementById(targetId.replace('Image', 'ImagePreview'));
+            if (preview) {
+                preview.style.display = 'block';
+                preview.querySelector('img').src = data.url;
+            }
+            showToast('Image uploaded!');
+        } else {
+            showToast(data.error, true);
+        }
+    } catch (err) {
+        showToast('Error uploading image', true);
+    }
+    
+    input.value = '';
+}
+
+async function uploadCollectionImage(input) {
+    const file = input.files[0];
+    if (!file) return;
+    
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    try {
+        const res = await fetch('/api/admin/upload', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+            const item = input.closest('.collection-item');
+            item.querySelector('.col-image').value = data.url;
+            const preview = item.querySelector('.collection-preview');
+            preview.innerHTML = `<img src="${data.url}" alt="" class="collection-preview-img">`;
+            showToast('Image uploaded!');
+        } else {
+            showToast(data.error, true);
+        }
+    } catch (err) {
+        showToast('Error uploading image', true);
+    }
+    
+    input.value = '';
+}
+
+async function saveHeroSettings() {
+    const data = {
+        title: document.getElementById('heroTitle').value,
+        subtitle: document.getElementById('heroSubtitle').value,
+        buttonText: document.getElementById('heroButtonText').value,
+        buttonLink: document.getElementById('heroButtonLink').value,
+        backgroundImage: document.getElementById('heroBackgroundImage').value
+    };
+    
+    try {
+        const res = await fetch('/api/admin/settings/hero', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        if (result.success) {
+            showToast('Hero settings saved!');
+        } else {
+            showToast(result.error, true);
+        }
+    } catch (err) {
+        showToast('Error saving settings', true);
+    }
+}
+
+function addCollection() {
+    const list = document.getElementById('collectionsList');
+    const tempId = Date.now();
+    
+    const html = `
+        <div class="collection-item" data-id="${tempId}">
+            <div class="collection-preview" style="background: #1a1a3e;">
+                <span class="collection-placeholder">📷</span>
+            </div>
+            <div class="collection-fields">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input type="text" class="col-title" value="" placeholder="COSMOS">
+                    </div>
+                    <div class="form-group">
+                        <label>Subtitle</label>
+                        <input type="text" class="col-subtitle" value="" placeholder="WONDERLAND">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Image</label>
+                    <div class="image-upload-group">
+                        <input type="text" class="col-image" value="" placeholder="Image URL or upload">
+                        <label class="upload-btn">
+                            <input type="file" accept="image/*" onchange="uploadCollectionImage(this)">
+                            📁
+                        </label>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Background Color</label>
+                        <div class="color-input">
+                            <input type="color" class="col-color" value="#1a1a3e">
+                            <input type="text" class="col-color-text" value="#1a1a3e" placeholder="#1a1a3e">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Link</label>
+                        <input type="text" class="col-link" value="/shop" placeholder="/shop?category=effects">
+                    </div>
+                </div>
+            </div>
+            <button class="btn-delete-collection" onclick="this.closest('.collection-item').remove()" title="Delete">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+            </button>
+        </div>
+    `;
+    
+    list.insertAdjacentHTML('beforeend', html);
+    setupColorInputs();
+}
+
+async function deleteCollection(id) {
+    if (!confirm('Delete this collection?')) return;
+    
+    try {
+        const res = await fetch(`/api/admin/settings/collections/${id}`, { method: 'DELETE' });
+        const result = await res.json();
+        if (result.success) {
+            document.querySelector(`.collection-item[data-id="${id}"]`).remove();
+            showToast('Collection deleted');
+        }
+    } catch (err) {
+        showToast('Error deleting collection', true);
+    }
+}
+
+async function saveCollections() {
+    const items = document.querySelectorAll('.collection-item');
+    const collections = [];
+    
+    items.forEach(item => {
+        collections.push({
+            title: item.querySelector('.col-title').value,
+            subtitle: item.querySelector('.col-subtitle').value,
+            image: item.querySelector('.col-image').value,
+            bgColor: item.querySelector('.col-color-text').value,
+            link: item.querySelector('.col-link').value
+        });
+    });
+    
+    try {
+        const res = await fetch('/api/admin/settings/collections', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ collections })
+        });
+        const result = await res.json();
+        if (result.success) {
+            showToast('Collections saved!');
+        } else {
+            showToast(result.error, true);
+        }
+    } catch (err) {
+        showToast('Error saving collections', true);
+    }
+}
+
+function setupColorInputs() {
+    document.querySelectorAll('.color-input').forEach(container => {
+        const colorInput = container.querySelector('input[type="color"]');
+        const textInput = container.querySelector('input[type="text"]');
+        const preview = container.closest('.collection-item')?.querySelector('.collection-preview');
+        
+        colorInput.addEventListener('input', () => {
+            textInput.value = colorInput.value;
+            if (preview) preview.style.background = colorInput.value;
+        });
+        
+        textInput.addEventListener('input', () => {
+            if (/^#[0-9A-Fa-f]{6}$/.test(textInput.value)) {
+                colorInput.value = textInput.value;
+                if (preview) preview.style.background = textInput.value;
+            }
+        });
+    });
+}
+
+setupColorInputs();
+</script>
+
+<%- include('./partials/admin-footer') %>

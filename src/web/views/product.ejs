@@ -1,0 +1,87 @@
+<%- include('partials/header') %>
+
+    <div class="product-page">
+        <div class="product-page-content">
+            <!-- Product Preview -->
+            <div class="product-preview-large">
+                <img src="<%= product.previewImage %>" alt="<%= product.name %>" class="product-preview-img">
+            </div>
+
+            <!-- Product Info -->
+            <div class="product-info">
+                <div class="product-info-header">
+                    <span class="product-type-badge"><%= product.type.replace('_', ' ') %></span>
+                    <h1 class="product-title"><%= product.name %></h1>
+                    <p class="product-description"><%= product.description %></p>
+                </div>
+
+                <div class="product-pricing">
+                    <div class="product-price-large">
+                        <img src="/img/nitro.webp" alt="" class="nitro-icon-large">
+                        <span class="price-amount-large">₱<%= product.price %></span>
+                        <% if (product.discount) { %>
+                        <span class="price-original">₱<%= product.originalPrice %></span>
+                        <span class="price-discount-badge">-<%= product.discount %>%</span>
+                        <% } %>
+                    </div>
+                </div>
+
+                <div class="product-actions">
+                    <% if (typeof user !== 'undefined' && user) { %>
+                    <a href="/checkout/<%= product.id %>" class="btn-purchase">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        Buy Now
+                    </a>
+                    <% } else { %>
+                    <a href="/login" class="btn-purchase">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                        </svg>
+                        Login to Buy
+                    </a>
+                    <% } %>
+                    <button class="btn-wishlist">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="stock-info">
+                    <% if (product.stock > 0) { %>
+                    <span class="in-stock">✓ In Stock (<%= product.stock %> available)</span>
+                    <% } else { %>
+                    <span class="out-of-stock">✗ Out of Stock</span>
+                    <% } %>
+                    <span class="sold-count"><%= product.sold || 0 %> sold</span>
+                </div>
+
+                <div class="product-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Category</span>
+                        <span class="detail-value"><%= product.category %></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Type</span>
+                        <span class="detail-value"><%= product.type.replace('_', ' ') %></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Related Products -->
+        <% if (relatedProducts.length > 0) { %>
+        <section class="related-section">
+            <h2 class="section-title">You might also like</h2>
+            <div class="product-grid">
+                <% relatedProducts.forEach(product => { %>
+                    <%- include('partials/product-card', { product }) %>
+                <% }) %>
+            </div>
+        </section>
+        <% } %>
+    </div>
+
+<%- include('partials/footer') %>

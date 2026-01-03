@@ -1,0 +1,76 @@
+<%- include('partials/header') %>
+
+    <div class="shop-layout">
+        <!-- Sidebar -->
+        <aside class="shop-sidebar">
+            <div class="sidebar-section">
+                <h4 class="sidebar-title">Categories</h4>
+                <div class="sidebar-links">
+                    <% categories.forEach(cat => { %>
+                    <a href="/shop<%= cat.id !== 'all' ? '?category=' + cat.id : '' %>" 
+                       class="sidebar-link <%= currentCategory === cat.id ? 'active' : '' %>">
+                        <% if (cat.id === 'all') { %>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                        </svg>
+                        <% } else if (cat.id === 'bundle') { %>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                        </svg>
+                        <% } else if (cat.id === 'decoration') { %>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <% } else if (cat.id === 'effects') { %>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                        </svg>
+                        <% } %>
+                        <%= cat.name %>
+                        <span class="sidebar-count"><%= allProducts.filter(p => cat.id === 'all' || p.category === cat.id).length %></span>
+                    </a>
+                    <% }) %>
+                </div>
+            </div>
+            
+            <div class="sidebar-section">
+                <h4 class="sidebar-title">Support</h4>
+                <div class="sidebar-links">
+                    <a href="https://discord.com" target="_blank" class="sidebar-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Help Center
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="shop-main">
+            <div class="shop-header">
+                <h1 class="shop-title">
+                    <%= categories.find(c => c.id === currentCategory)?.name || 'All Products' %>
+                </h1>
+                <p class="shop-subtitle"><%= products.length %> items available</p>
+            </div>
+
+            <% if (products.length === 0) { %>
+            <div class="empty-state">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                </svg>
+                <h3>No products found</h3>
+                <p>Try selecting a different category</p>
+            </div>
+            <% } else { %>
+            <div class="product-grid">
+                <% products.forEach(product => { %>
+                    <%- include('partials/product-card', { product }) %>
+                <% }) %>
+            </div>
+            <% } %>
+        </main>
+    </div>
+
+<%- include('partials/footer') %>

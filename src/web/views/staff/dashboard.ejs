@@ -1,0 +1,951 @@
+<%- include('../partials/header') %>
+
+<div class="staff-page">
+    <div class="staff-container">
+        <!-- Header -->
+        <div class="staff-header">
+            <div class="staff-header-left">
+                <h1>📋 Orders</h1>
+                <p>Manage customer orders</p>
+            </div>
+            <div class="staff-header-right">
+                <div class="live-indicator">
+                    <span class="live-dot"></span>
+                    <span>Live</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Stats Cards -->
+        <div class="stats-row">
+            <div class="stat-card pending-card">
+                <span class="stat-icon">⏳</span>
+                <div class="stat-info">
+                    <span class="stat-value" id="pendingCount"><%= pendingOrders.length %></span>
+                    <span class="stat-label">Pending</span>
+                </div>
+            </div>
+            <div class="stat-card success-card">
+                <span class="stat-icon">✅</span>
+                <div class="stat-info">
+                    <span class="stat-value" id="completedCount"><%= completedOrders.filter(o => o.status === 'completed').length %></span>
+                    <span class="stat-label">Completed</span>
+                </div>
+            </div>
+            <div class="stat-card danger-card">
+                <span class="stat-icon">❌</span>
+                <div class="stat-info">
+                    <span class="stat-value" id="rejectedCount"><%= completedOrders.filter(o => o.status === 'rejected').length %></span>
+                    <span class="stat-label">Rejected</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" data-tab="pending">
+                Pending
+                <span class="tab-badge" id="pendingBadge"><%= pendingOrders.length %></span>
+            </button>
+            <button class="tab" data-tab="history">History</button>
+        </div>
+        
+        <!-- Pending Orders -->
+        <div class="tab-content active" id="pending-tab">
+            <div class="orders-list" id="pendingOrdersList">
+                <% if (pendingOrders.length === 0) { %>
+                <div class="empty-state" id="emptyPending">
+                    <span class="empty-icon">📭</span>
+                    <h3>No pending orders</h3>
+                    <p>New orders will appear here automatically</p>
+                </div>
+                <% } else { %>
+                <% pendingOrders.forEach(order => { %>
+                <div class="order-card" data-order-id="<%= order.id %>" data-user-id="<%= order.userId %>">
+                    <div class="order-header">
+                        <div class="order-product">
+                            <img src="<%= order.productImage %>" alt="" class="order-img">
+                            <div class="order-details">
+                                <span class="order-name"><%= order.productName %></span>
+                                <span class="order-id">#<%= order.orderId %></span>
+                            </div>
+                        </div>
+                        <div class="order-price">₱<%= order.price %></div>
+                    </div>
+                    <div class="order-body">
+                        <div class="order-info-row">
+                            <span class="info-label">👤 Buyer</span>
+                            <span class="info-value"><%= order.username %></span>
+                        </div>
+                        <div class="order-info-row">
+                            <span class="info-label">💳 Payment</span>
+                            <span class="info-value payment-badge <%= order.paymentMethod?.toLowerCase() %>">
+                                <%= order.paymentMethod %>
+                            </span>
+                        </div>
+                        <% if (order.paymentProof) { %>
+                        <div class="order-info-row">
+                            <span class="info-label">📝 Proof</span>
+                            <span class="info-value proof"><%= order.paymentProof %></span>
+                        </div>
+                        <% } %>
+                        <div class="order-info-row">
+                            <span class="info-label">🕐 Time</span>
+                            <span class="info-value"><%= new Date(order.createdAt).toLocaleString() %></span>
+                        </div>
+                    </div>
+                    <div class="order-actions">
+                        <button class="btn-approve" onclick="openApproveModal('<%= order.id %>', '<%= order.userId %>', '<%= order.productName %>')">
+                            <span>✓</span> Approve
+                        </button>
+                        <button class="btn-reject" onclick="openRejectModal('<%= order.id %>', '<%= order.productName %>')">
+                            <span>✕</span> Reject
+                        </button>
+                    </div>
+                </div>
+                <% }) %>
+                <% } %>
+            </div>
+        </div>
+        
+        <!-- History -->
+        <div class="tab-content" id="history-tab">
+            <div class="orders-list" id="historyOrdersList">
+                <% if (completedOrders.length === 0) { %>
+                <div class="empty-state">
+                    <span class="empty-icon">📋</span>
+                    <h3>No order history</h3>
+                    <p>Completed and rejected orders will appear here</p>
+                </div>
+                <% } else { %>
+                <% completedOrders.slice().reverse().forEach(order => { %>
+                <div class="order-card history <%= order.status %>">
+                    <div class="order-header">
+                        <div class="order-product">
+                            <img src="<%= order.productImage %>" alt="" class="order-img">
+                            <div class="order-details">
+                                <span class="order-name"><%= order.productName %></span>
+                                <span class="order-id">#<%= order.orderId %></span>
+                            </div>
+                        </div>
+                        <div class="order-status <%= order.status %>">
+                            <%= order.status === 'completed' ? '✅ Approved' : '❌ Rejected' %>
+                        </div>
+                    </div>
+                    <div class="order-body compact">
+                        <div class="order-info-row">
+                            <span class="info-label">Buyer</span>
+                            <span class="info-value"><%= order.username %></span>
+                        </div>
+                        <div class="order-info-row">
+                            <span class="info-label">Price</span>
+                            <span class="info-value">₱<%= order.price %></span>
+                        </div>
+                        <div class="order-info-row">
+                            <span class="info-label">By</span>
+                            <span class="info-value"><%= order.completedBy || order.rejectedBy %></span>
+                        </div>
+                    </div>
+                </div>
+                <% }) %>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Approve Modal -->
+<div class="modal" id="approveModal">
+    <div class="modal-overlay" onclick="closeModal('approveModal')"></div>
+    <div class="modal-box">
+        <div class="modal-header">
+            <h2>✅ Approve Order</h2>
+            <button class="modal-close" onclick="closeModal('approveModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p class="modal-product" id="approveProductName"></p>
+            <div class="form-group">
+                <label>Product Link / Code *</label>
+                <input type="text" id="productLink" placeholder="Enter the product link or code to send...">
+                <small>This will be sent to the customer via DM</small>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeModal('approveModal')">Cancel</button>
+            <button class="btn-primary" id="approveBtn" onclick="submitApproval()">
+                <span class="btn-text">Approve & Send</span>
+                <span class="btn-loading" style="display:none;">Processing...</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal" id="rejectModal">
+    <div class="modal-overlay" onclick="closeModal('rejectModal')"></div>
+    <div class="modal-box">
+        <div class="modal-header">
+            <h2>❌ Reject Order</h2>
+            <button class="modal-close" onclick="closeModal('rejectModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p class="modal-product" id="rejectProductName"></p>
+            <div class="form-group">
+                <label>Reason (optional)</label>
+                <textarea id="rejectReason" placeholder="Enter reason for rejection..." rows="3"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeModal('rejectModal')">Cancel</button>
+            <button class="btn-danger" id="rejectBtn" onclick="submitRejection()">
+                <span class="btn-text">Reject Order</span>
+                <span class="btn-loading" style="display:none;">Processing...</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div class="toast" id="toast">
+    <span class="toast-icon"></span>
+    <span class="toast-message"></span>
+</div>
+
+
+<style>
+.staff-page {
+    min-height: calc(100vh - 70px);
+    background: var(--bg-primary);
+    padding: 1.5rem;
+}
+
+.staff-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.staff-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.staff-header h1 {
+    font-size: 1.5rem;
+    font-weight: 800;
+}
+
+.staff-header p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.live-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(59, 165, 92, 0.1);
+    border-radius: 20px;
+    font-size: 0.85rem;
+    color: #3ba55c;
+    font-weight: 600;
+}
+
+.live-dot {
+    width: 8px;
+    height: 8px;
+    background: #3ba55c;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.stat-icon {
+    font-size: 1.5rem;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 800;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.pending-card { border-left: 3px solid #fab005; }
+.success-card { border-left: 3px solid #3ba55c; }
+.danger-card { border-left: 3px solid #ed4245; }
+
+.tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.5rem;
+}
+
+.tab {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    background: none;
+    border: none;
+    border-radius: 8px;
+    color: var(--text-muted);
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tab:hover {
+    color: var(--text-primary);
+    background: var(--bg-tertiary);
+}
+
+.tab.active {
+    color: var(--text-primary);
+    background: var(--bg-card);
+}
+
+.tab-badge {
+    background: #ed4245;
+    color: white;
+    padding: 0.15rem 0.5rem;
+    border-radius: 10px;
+    font-size: 0.75rem;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.order-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.2s;
+}
+
+.order-card:hover {
+    border-color: var(--border-light, #3a3a44);
+}
+
+.order-card.history {
+    opacity: 0.8;
+}
+
+.order-card.history.completed {
+    border-left: 3px solid #3ba55c;
+}
+
+.order-card.history.rejected {
+    border-left: 3px solid #ed4245;
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.order-product {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.order-img {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    object-fit: cover;
+    background: var(--bg-tertiary);
+}
+
+.order-name {
+    display: block;
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.order-id {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.order-price {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #3ba55c;
+}
+
+.order-status {
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.order-status.completed { color: #3ba55c; }
+.order-status.rejected { color: #ed4245; }
+
+.order-body {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.order-body.compact {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.order-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.order-body.compact .order-info-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+}
+
+.info-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.info-value {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.info-value.proof {
+    background: var(--bg-tertiary);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.8rem;
+}
+
+.payment-badge {
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.payment-badge.gcash { background: rgba(0, 123, 255, 0.15); color: #007bff; }
+.payment-badge.paypal { background: rgba(0, 48, 135, 0.15); color: #0070ba; }
+.payment-badge.bank { background: rgba(40, 167, 69, 0.15); color: #28a745; }
+
+.order-actions {
+    display: flex;
+    gap: 0.5rem;
+    padding: 1rem;
+    border-top: 1px solid var(--border);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.btn-approve, .btn-reject {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-approve {
+    background: #3ba55c;
+    color: white;
+}
+
+.btn-approve:hover { background: #2d8049; }
+
+.btn-reject {
+    background: rgba(237, 66, 69, 0.15);
+    color: #ed4245;
+}
+
+.btn-reject:hover { background: rgba(237, 66, 69, 0.25); }
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-muted);
+}
+
+.empty-icon {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.active { display: flex; }
+
+.modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.modal-box {
+    position: relative;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 420px;
+    margin: 1rem;
+    animation: modalIn 0.2s ease;
+}
+
+@keyframes modalIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.modal-header h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.modal-close {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-tertiary);
+    border: none;
+    border-radius: 8px;
+    color: var(--text-muted);
+    font-size: 1.25rem;
+    cursor: pointer;
+}
+
+.modal-close:hover {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.modal-body {
+    padding: 1.25rem;
+}
+
+.modal-product {
+    background: var(--bg-tertiary);
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.form-group {
+    margin-bottom: 0;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.9rem;
+    resize: none;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #5865f2;
+}
+
+.form-group small {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.modal-footer {
+    display: flex;
+    gap: 0.75rem;
+    padding: 1.25rem;
+    border-top: 1px solid var(--border);
+}
+
+.modal-footer button {
+    flex: 1;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+}
+
+.btn-secondary:hover {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.btn-primary {
+    background: #3ba55c;
+    color: white;
+}
+
+.btn-primary:hover { background: #2d8049; }
+
+.btn-danger {
+    background: #ed4245;
+    color: white;
+}
+
+.btn-danger:hover { background: #c93b3e; }
+
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Toast */
+.toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 2000;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.toast.success { border-color: #3ba55c; }
+.toast.error { border-color: #ed4245; }
+
+.toast-icon { font-size: 1.25rem; }
+.toast-message { font-weight: 500; }
+
+@media (max-width: 768px) {
+    .staff-page { padding: 1rem; }
+    .staff-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+    .staff-header h1 { font-size: 1.25rem; }
+    .stats-row { grid-template-columns: 1fr; gap: 0.75rem; }
+    .stat-card { padding: 0.75rem 1rem; }
+    .stat-value { font-size: 1.25rem; }
+    .tabs { overflow-x: auto; padding-bottom: 0.75rem; }
+    .tab { white-space: nowrap; padding: 0.5rem 0.75rem; font-size: 0.85rem; }
+    .order-header { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+    .order-product { width: 100%; }
+    .order-img { width: 40px; height: 40px; }
+    .order-name { font-size: 0.9rem; }
+    .order-price { font-size: 1rem; }
+    .order-body { padding: 0.75rem 1rem; }
+    .order-info-row { flex-direction: column; align-items: flex-start; gap: 0.25rem; }
+    .order-actions { flex-direction: column; padding: 0.75rem 1rem; }
+    .btn-approve, .btn-reject { padding: 0.65rem; font-size: 0.85rem; }
+    .modal-box { margin: 0.75rem; }
+    .modal-header, .modal-body, .modal-footer { padding: 1rem; }
+    .modal-header h2 { font-size: 1rem; }
+    .modal-footer { flex-direction: column; }
+    .modal-footer button { width: 100%; }
+    .toast { left: 1rem; right: 1rem; transform: translateX(0) translateY(100px); }
+    .toast.show { transform: translateX(0) translateY(0); }
+}
+</style>
+
+<script>
+let currentOrderId = null;
+let currentUserId = null;
+
+// Tab switching
+document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab + '-tab').classList.add('active');
+    });
+});
+
+function openApproveModal(orderId, userId, productName) {
+    currentOrderId = orderId;
+    currentUserId = userId;
+    document.getElementById('approveProductName').textContent = '📦 ' + productName;
+    document.getElementById('productLink').value = '';
+    document.getElementById('approveModal').classList.add('active');
+    document.getElementById('productLink').focus();
+}
+
+function openRejectModal(orderId, productName) {
+    currentOrderId = orderId;
+    document.getElementById('rejectProductName').textContent = '📦 ' + productName;
+    document.getElementById('rejectReason').value = '';
+    document.getElementById('rejectModal').classList.add('active');
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).classList.remove('active');
+    currentOrderId = null;
+    currentUserId = null;
+}
+
+function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    toast.querySelector('.toast-icon').textContent = type === 'success' ? '✅' : '❌';
+    toast.querySelector('.toast-message').textContent = message;
+    toast.className = 'toast ' + type + ' show';
+    setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+function setButtonLoading(btn, loading) {
+    btn.disabled = loading;
+    btn.querySelector('.btn-text').style.display = loading ? 'none' : 'inline';
+    btn.querySelector('.btn-loading').style.display = loading ? 'inline' : 'none';
+}
+
+async function submitApproval() {
+    const productLink = document.getElementById('productLink').value.trim();
+    if (!productLink) {
+        showToast('Please enter the product link', 'error');
+        return;
+    }
+    
+    const btn = document.getElementById('approveBtn');
+    setButtonLoading(btn, true);
+    
+    try {
+        // Check DM first
+        const checkRes = await fetch(`/api/staff/check-dm/${currentUserId}`);
+        const checkData = await checkRes.json();
+        
+        if (!checkData.canDM) {
+            showToast('User has DMs closed. Ask them to open DMs first.', 'error');
+            setButtonLoading(btn, false);
+            return;
+        }
+        
+        const res = await fetch(`/api/staff/approve/${currentOrderId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productLink })
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+            closeModal('approveModal');
+            removeOrderCard(currentOrderId);
+            updateStats();
+            showToast('Order approved! Product sent to customer.');
+        } else {
+            showToast(data.error, 'error');
+        }
+    } catch (err) {
+        showToast('Error processing order', 'error');
+    }
+    
+    setButtonLoading(btn, false);
+}
+
+async function submitRejection() {
+    const reason = document.getElementById('rejectReason').value.trim();
+    const btn = document.getElementById('rejectBtn');
+    setButtonLoading(btn, true);
+    
+    try {
+        const res = await fetch(`/api/staff/reject/${currentOrderId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reason })
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+            closeModal('rejectModal');
+            removeOrderCard(currentOrderId);
+            updateStats();
+            showToast('Order rejected.');
+        } else {
+            showToast(data.error, 'error');
+        }
+    } catch (err) {
+        showToast('Error processing order', 'error');
+    }
+    
+    setButtonLoading(btn, false);
+}
+
+function removeOrderCard(orderId) {
+    const card = document.querySelector(`.order-card[data-order-id="${orderId}"]`);
+    if (card) {
+        card.style.animation = 'fadeOut 0.3s ease forwards';
+        setTimeout(() => card.remove(), 300);
+    }
+    
+    // Show empty state if no more orders
+    setTimeout(() => {
+        const list = document.getElementById('pendingOrdersList');
+        if (list.querySelectorAll('.order-card').length === 0) {
+            list.innerHTML = `
+                <div class="empty-state" id="emptyPending">
+                    <span class="empty-icon">📭</span>
+                    <h3>No pending orders</h3>
+                    <p>New orders will appear here automatically</p>
+                </div>
+            `;
+        }
+    }, 350);
+}
+
+function updateStats() {
+    const pendingCount = document.querySelectorAll('#pendingOrdersList .order-card').length;
+    document.getElementById('pendingCount').textContent = pendingCount;
+    document.getElementById('pendingBadge').textContent = pendingCount;
+    
+    // Update completed/rejected counts
+    const completedCount = parseInt(document.getElementById('completedCount').textContent) || 0;
+    document.getElementById('completedCount').textContent = completedCount + 1;
+}
+
+// Auto-refresh every 30 seconds
+setInterval(async () => {
+    try {
+        const res = await fetch('/api/staff/orders');
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById('pendingCount').textContent = data.pendingCount;
+            document.getElementById('pendingBadge').textContent = data.pendingCount;
+            document.getElementById('completedCount').textContent = data.completedCount;
+            document.getElementById('rejectedCount').textContent = data.rejectedCount;
+        }
+    } catch (err) {}
+}, 30000);
+
+// Close modal on escape
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeModal('approveModal');
+        closeModal('rejectModal');
+    }
+});
+</script>
+
+<style>
+@keyframes fadeOut {
+    to { opacity: 0; transform: translateX(-20px); }
+}
+</style>
+
+<%- include('../partials/footer') %>

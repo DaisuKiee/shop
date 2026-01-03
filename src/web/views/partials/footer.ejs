@@ -1,0 +1,99 @@
+    </main>
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <img src="<%= botAvatar %>" alt="<%= botName %>">
+                <span><%= botName %></span>
+            </div>
+            <div class="footer-links">
+                <a href="#">Terms</a>
+                <a href="#">Privacy</a>
+                <a href="#">Support</a>
+                <a href="https://discord.com" target="_blank">Discord</a>
+            </div>
+            <p class="footer-copy">© 2026 <%= botName %>. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                const html = document.documentElement;
+                const currentTheme = html.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                html.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+            });
+        }
+        
+        // Mobile Menu Toggle
+        const navToggle = document.getElementById('navToggle');
+        const navLinks = document.getElementById('navLinks');
+        const navOverlay = document.getElementById('navOverlay');
+        
+        function closeMobileMenu() {
+            if (navToggle) navToggle.classList.remove('active');
+            if (navLinks) navLinks.classList.remove('active');
+            if (navOverlay) navOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        function openMobileMenu() {
+            if (navToggle) navToggle.classList.add('active');
+            if (navLinks) navLinks.classList.add('active');
+            if (navOverlay) navOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        if (navToggle && navLinks) {
+            navToggle.addEventListener('click', () => {
+                if (navLinks.classList.contains('active')) {
+                    closeMobileMenu();
+                } else {
+                    openMobileMenu();
+                }
+            });
+            
+            // Close menu when clicking overlay
+            if (navOverlay) {
+                navOverlay.addEventListener('click', closeMobileMenu);
+            }
+            
+            // Close menu when clicking links
+            navLinks.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', closeMobileMenu);
+            });
+        }
+        
+        // Page Transition for internal links
+        const pageTransition = document.getElementById('pageTransition');
+        if (pageTransition) {
+            document.querySelectorAll('a[href^="/"]').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    const href = link.getAttribute('href');
+                    if (href.startsWith('#') || href === window.location.pathname) return;
+                    
+                    e.preventDefault();
+                    closeMobileMenu();
+                    pageTransition.classList.add('active');
+                    
+                    setTimeout(() => {
+                        window.location.href = href;
+                    }, 300);
+                });
+            });
+            
+            // Hide transition on page show (back button)
+            window.addEventListener('pageshow', (e) => {
+                if (e.persisted) {
+                    pageTransition.classList.remove('active');
+                    closeMobileMenu();
+                }
+            });
+        }
+    </script>
+    <script src="/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<a href="/product/<%= product.id %>" class="product-card">
+    <div class="product-preview">
+        <img src="<%= product.previewImage %>" alt="<%= product.name %>">
+        <% if (product.discount) { %>
+        <span class="product-badge">-<%= product.discount %>%</span>
+        <% } %>
+    </div>
+    <div class="product-info">
+        <div class="product-name"><%= product.name %></div>
+        <div class="product-bottom">
+            <div class="product-price">
+                <img src="/img/nitro.webp" alt="" class="nitro-icon">
+                <span class="price-amount">₱<%= product.price %></span>
+            </div>
+            <div class="product-stock">
+                <span class="stock-dot <%= product.stock > 0 ? 'in-stock' : 'out-stock' %>"></span>
+                <span><%= product.stock %> stock</span>
+            </div>
+        </div>
+    </div>
+</a>

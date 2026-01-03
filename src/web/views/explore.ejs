@@ -1,0 +1,50 @@
+<%- include('partials/header') %>
+
+    <!-- Browse Header -->
+    <div class="browse-header">
+        <div class="browse-header-content">
+            <h1 class="browse-title">Browse</h1>
+            <p class="browse-subtitle">
+                <% if (search) { %>
+                    Search results for "<%= search %>"
+                <% } else { %>
+                    Discover all available items in the shop
+                <% } %>
+            </p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Category Tabs -->
+        <div class="category-tabs">
+            <a href="/explore" class="category-tab <%= category === 'all' ? 'active' : '' %>">All</a>
+            <a href="/explore?category=bundle" class="category-tab <%= category === 'bundle' ? 'active' : '' %>">Bundles</a>
+            <a href="/explore?category=decoration" class="category-tab <%= category === 'decoration' ? 'active' : '' %>">Avatar Decorations</a>
+            <a href="/explore?category=effects" class="category-tab <%= category === 'effects' ? 'active' : '' %>">Profile Effects</a>
+        </div>
+
+        <!-- Results Count -->
+        <div class="results-info">
+            <span><%= products.length %> items</span>
+        </div>
+
+        <% if (products.length === 0) { %>
+        <div class="empty-state">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <h3>No products found</h3>
+            <p>Try adjusting your search or filter</p>
+            <a href="/explore" class="btn-reset">Clear filters</a>
+        </div>
+        <% } else { %>
+        <div class="product-grid">
+            <% products.forEach(product => { %>
+                <%- include('partials/product-card', { product }) %>
+            <% }) %>
+        </div>
+        <% } %>
+    </div>
+
+<%- include('partials/footer') %>

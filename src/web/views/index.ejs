@@ -1,0 +1,91 @@
+<%- include('partials/header') %>
+
+    <!-- Hero Banner -->
+    <div class="hero-banner">
+        <div class="hero-banner-bg">
+            <% if (siteSettings.hero.backgroundImage) { %>
+            <img src="<%= siteSettings.hero.backgroundImage %>" alt="" class="hero-bg-img">
+            <% } %>
+            <div class="hero-particles"></div>
+        </div>
+        <div class="hero-banner-content">
+            <h1 class="hero-banner-title"><%= siteSettings.hero.title %></h1>
+            <p class="hero-banner-subtitle"><%= siteSettings.hero.subtitle %></p>
+            <a href="<%= siteSettings.hero.buttonLink %>" class="hero-banner-btn"><%= siteSettings.hero.buttonText %></a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Featured Products Slider -->
+        <section class="product-section">
+            <div class="section-header">
+                <h2 class="section-title">Featured</h2>
+                <div class="section-nav">
+                    <button class="section-nav-btn" onclick="scrollProducts('featured', -1)">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <button class="section-nav-btn" onclick="scrollProducts('featured', 1)">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="product-slider" id="featured">
+                <% if (featuredProducts.length === 0) { %>
+                <div class="empty-slider">No featured products yet</div>
+                <% } else { %>
+                <% featuredProducts.forEach(product => { %>
+                    <%- include('partials/product-card', { product }) %>
+                <% }) %>
+                <% } %>
+            </div>
+        </section>
+
+        <!-- Collections Grid -->
+        <% if (siteSettings.featuredCollections.length > 0) { %>
+        <div class="collection-grid">
+            <% siteSettings.featuredCollections.forEach(collection => { %>
+            <a href="<%= collection.link %>" class="collection-card">
+                <% if (collection.image) { %>
+                <div class="collection-card-bg">
+                    <img src="<%= collection.image %>" alt="" class="collection-bg-img">
+                </div>
+                <% } else { %>
+                <div class="collection-card-bg" style="background: linear-gradient(135deg, <%= collection.bgColor %> 0%, <%= collection.bgColor %>99 100%);"></div>
+                <% } %>
+                <div class="collection-card-content">
+                    <div class="collection-card-title"><%= collection.title %></div>
+                    <% if (collection.subtitle) { %>
+                    <div class="collection-card-subtitle"><%= collection.subtitle %></div>
+                    <% } %>
+                </div>
+            </a>
+            <% }) %>
+        </div>
+        <% } %>
+
+        <!-- All Products Section -->
+        <section class="product-section">
+            <div class="section-header">
+                <h2 class="section-title">All Products</h2>
+                <a href="/shop" class="section-link">View All →</a>
+            </div>
+            <% if (products.length === 0) { %>
+            <div class="empty-state">
+                <p>No products available yet. Check back soon!</p>
+            </div>
+            <% } else { %>
+            <div class="product-grid">
+                <% products.forEach(product => { %>
+                    <%- include('partials/product-card', { product }) %>
+                <% }) %>
+            </div>
+            <% } %>
+        </section>
+    </div>
+
+<%- include('partials/footer') %>
